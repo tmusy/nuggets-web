@@ -6,7 +6,7 @@
     <td>
       <span class="badge badge-lg text-sm blue-grey">{{ account }}</span>
       <div class="form-group row" v-if="!account">
-        <select class="form-control form-control-sm" v-on:change="updateTransaction" v-model="account">
+        <select class="form-control form-control-sm" v-on:change="updateTransaction" v-model="selectedAccount">
           <option></option>
           <option v-for="a in accounts">{{ a.name }}</option>
         </select>
@@ -26,8 +26,7 @@
     name: "transaction-table-item",
     data () {
       return {
-        account: null,
-        amount: this.transaction.amount,
+        selectedAccount: null,
         editAccount: true
       }
     },
@@ -40,30 +39,35 @@
     methods: {
       updateTransaction: function () {
         if (this.transaction.type === "expense") {
-          this.transaction.credit = this.accountsByName(this.account);
+          this.transaction.credit = this.accountsByName(this.selectedAccount);
         } else {
-          this.transaction.debit = this.accountsByName(this.account);
+          this.transaction.debit = this.accountsByName(this.selectedAccount);
         }
         console.log(this.transaction)
         finance.updateTransaction(this.transaction, console.log);
-      },
-      evalAccount: function () {
-        if (this.transaction.type === "expense") {
-          this.amount = -this.amount;
-          this.account = this.transaction.credit ? this.transaction.credit.name : null
-        } else {
-          this.account = this.transaction.debit ? this.transaction.debit.name : null
-        }
+        this.selectedAccount = null
       }
     },
     computed: {
       ...mapGetters({
         accounts: 'allAccounts',
         accountsByName: 'accountsByName'
-      })
+      }),
+      amount: function () {
+        if (this.transaction.type === "expense") {
+          return -this.transaction.amount;
+        }
+        return this.transaction.amount
+      },
+      account: function () {
+        if (this.transaction.type === "expense") {
+          return this.transaction.credit ? this.transaction.credit.name : null
+        } else {
+          return this.transaction.debit ? this.transaction.debit.name : null
+        }
+      }
     },
     created: function () {
-      this.evalAccount()
     }
   }
 </script>
